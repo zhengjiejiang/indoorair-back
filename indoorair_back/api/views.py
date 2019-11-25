@@ -5,6 +5,14 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from rest_framework import status, response, views
 
+from gateway.serializers import RegisterSerializer, LoginSerializer
+from dashboard.serializers import DashboardSerializer
+from foundations.models import Instrument,TimeSeriesDatum,Sensor
+from instrument.serializers import InstrumentRetrieveSerializer
+from sensor.serializers import SensorRetrieveSerializer
+import csv
+
+
 
 
 
@@ -19,49 +27,48 @@ def api_version(request):
 
 
 #----gateway----
-def register_page(request):
-    # STEP 2 - Do something w/ models.
-    # ...
+"""
+gateway/views.py
+"""
+from django.http import HttpResponse, JsonResponse
+# from django.contrib.auth.models import User
+from django.shortcuts import render # STEP 1 - Import
+from django.shortcuts import redirect
+from django.contrib.auth.models import User # STEP 1: Import the user
+from django.contrib.auth import authenticate, login, logout
+from rest_framework import views, status, response
 
-    # STEP 3 - Do something w/ context.
-    # ..
-
-    # STEP 4 - Use the `render` function.
-    return render(request, "pages/gateway/register.html", {})
-
-
-def register_success_page(request):
-    # STEP 2 - Do something w/ models.
-    # ...
-
-    # STEP 3 - Do something w/ context.
-    # ..
-
-    # STEP 4 - Use the `render` function.
-    return render(request, "pages/gateway/register_success.html", {})
-
-
-def login_page(request):
-    # STEP 2 - Do something w/ models.
-    # ...
-
-    # STEP 3 - Do something w/ context.
-    # ..
-
-    # STEP 4 - Use the `render` function.
-    return render(request, "pages/gateway/login.html", {})
+from gateway.serializers import RegisterSerializer, LoginSerializer
 
 
 
-def logout_page(request):
-    # STEP 2 - Do something w/ models.
-    # ...
 
-    # STEP 3 - Do something w/ context.
-    # ..
+class RegisterAPI(views.APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(
+            status=status.HTTP_201_CREATED,
+            data=serializer.data,
+        )
 
-    # STEP 4 - Use the `render` function.
-    return render(request, "pages/gateway/logout.html", {})
+
+
+class LoginAPI(views.APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data, context={
+            'request': request,
+        })
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(
+            status=status.HTTP_200_OK,
+            data={
+                 'details': 'You have been logged in successfully!'
+            },
+        )
+
 
 
 
@@ -81,50 +88,92 @@ class DashboardAPI(views.APIView):
 
 
 # ---instrument ---
-def i_list_page(request):
-    return render(request, "pages/instrument/list.html", {})
-
-def i_create_page(request):
-    # STEP 2 - Do something w/ models.
-    # ...
-
-    # STEP 3 - Do something w/ context.
-    # ..
-
-    # STEP 4 - Use the `render` function.
-    return render(request, "pages/instrument/create.html", {})
-
-
-def i_retrieve_page(request, id):
-    return render(request, "pages/instrument/retrieve.html", {
-        "instrument_id": int(id),
+def get_instruments_list_api(request):
+    instruments = Instrument.objects.filter(user=request.user)
+    output = []
+    for instrument in instruments.all():
+        output.append({
+            'id': instrument.id,
+            'name': instrument.name,
+        })
+    return JsonResponse({
+        'instruments': output
     })
 
+class InstrumentRetrieveAPI(views.APIView):
+    def get(self, request, id):
+        instrument = Instrument.objects.get(id=int(id))
+        serializer = InstrumentRetrieveSerializer(instrument, many=False)
+        return response.Response(
+            status=status.HTTP_200_OK,
+            data=serializer.data
+        )
 
-def i_update_page(request, id):
-    return render(request, "pages/instrument/update.html", {
-        "instrument_id": int(id),
-    })
-
+class InstrumentUpdateAPI(views.APIView):
+    def put(self, request, id):
+        instrument = Instrument.objects.get(id=id)
+        serializer = InstrumentUpdateSerializer(instrument, data=request.data, many=False)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response(
+            status=status.HTTP_200_OK,
+            data={
+                'Updated instrument'
+            }
+        )
 
 
 
 
 #---report---
 
+def download_csv_report_01_temperature_sensor_api(request):
+    # https://docs.djangoproject.com/en/2.2/howto/outputting-csv/
 
-def report_list_page(request):
-    return render(request,"pages/report/list.html",{})
+    data = TimeSeriesDatum.objects.filter(
+        sensor__name="Temperature",
+        sensor__instrument__user=request.user,
+    )
+
+    # Create the HttpResponse object with the appropriate CSV header.
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="temperature_data.csv"'
+
+    # Connect our response object with our CSV writer object.
+    writer = csv.writer(response)
+
+    # This is the header row
+    writer.writerow(['sensor_name', 'sensor_id', 'time', 'value',])
+
+    # Let us go through all our data and generate our CSV file.
+    for datum in data:
+        writer.writerow([datum.sensor.name, datum.sensor.id, datum.time, datum.value])
+
+    return response
 
 
-def report_01_page(request):
-    return render(request,"pages/report/01.html",{})
 
 
-def sensor_retrieve_page(request, id):
-    return render(request, "pages/sensor/retrieve.html", {
-        "sensor_id": int(id),
-    })
+
+
+
+
+
+
+
+
+#---sensor---
+
+class SensorRetrieveAPI(views.APIView):
+    def get(self, request, id):
+        sensor = get_object_or_404(Sensor, id=int(id))
+        serializer = SensorRetrieveSerializer(sensor)
+        return response.Response(
+            status=status.HTTP_200_OK,
+            data=serializer.data
+        )
+
+
 
 
 
