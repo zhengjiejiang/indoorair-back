@@ -33,13 +33,9 @@ urlpatterns = [
      path('api/sensor/<int:id>', views.SensorRetrieveAPI.as_view(), name='sensor_retrieve_api'),
 # ---- user profile -----
 
-    path('profile', views.profile_retrieve_page, name='profile_retrieve_page'),
-    path('profile/update', views.profile_update_page, name='profile_update_page'),
+    path('api/profile', views.get_profile_retrieve_api, name='profile_retrieve_api'),
+    path('api/profile/update', views.post_profile_update_api, name='profile_update_api'),
 
-]
-
-
-# path   网站的前缀
 ]
 
 

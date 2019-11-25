@@ -180,10 +180,16 @@ class SensorRetrieveAPI(views.APIView):
 #---user profile---
 
 
-def profile_retrieve_page(request):
-    return render(request, "pages/userprofile/retrieve.html", {})
+def get_profile_retrieve_api(request):
+    return JsonResponse({
+         'first_name': request.user.first_name,
+         'last_name': request.user.last_name,
+         'email': request.user.email,
+         'username': request.user.username,
+    })
 
 
-
-def profile_update_page(request):
-    return render(request, "pages/userprofile/update.html", {})
+def post_profile_update_api(request):
+    return JsonResponse({
+         'version': '1.0',
+    })
