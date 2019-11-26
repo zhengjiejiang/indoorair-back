@@ -1,1 +1,1 @@
-from dashboard.serializers.dashboard_serializer import DashboardSerializer
+from api.serializers.dashboard.dashboard_serializer import DashboardSerializer

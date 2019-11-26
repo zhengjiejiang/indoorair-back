@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User # STEP 1: Import the user
 import statistics
-from foundations.models import TimeSeriesDatum, Sensor, Instrument
+from foundation.models import TimeSeriesDatum, Sensor, Instrument
 
 class DashboardSerializer(serializers.BaseSerializer):
     def get_values(self,sensor_name, insturments):

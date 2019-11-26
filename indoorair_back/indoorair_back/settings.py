@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     # 'report.apps.ReportConfig',
     # 'aprofile.apps.AprofileConfig',
     # 'instrument.apps.InstrumentConfig',
-    # 'foundations.apps.FoundationsConfig',
+    # 'foundation.apps.foundationConfig',
     # 'dashboard.apps.DashboardConfig',
     # 'gateway.apps.GatewayConfig',
     # 'homepage.apps.HomepageConfig',
@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 
 
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
 ]
 
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'indoorair_back.urls'
 
@@ -139,7 +141,10 @@ STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-    'foundations.drf.custom-authentication.SessionAuthentication',
+    'rest_framework.authentication.SessionAuthentication',
+    'rest_framework.authentication.TokenAuthentication',
+
+    # 'foundation.drf.custom-authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         # PLACE FILTERING CLASSES HERE.

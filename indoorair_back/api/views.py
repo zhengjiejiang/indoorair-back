@@ -3,13 +3,22 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from rest_framework import status, response, views
+from django.contrib.auth.models import User # STEP 1: Import the user
 
-from gateway.serializers import RegisterSerializer, LoginSerializer
-from dashboard.serializers import DashboardSerializer
-from foundations.models import Instrument,TimeSeriesDatum,Sensor
-from instrument.serializers import InstrumentRetrieveSerializer
-from sensor.serializers import SensorRetrieveSerializer
+
+from foundation.models import Instrument,TimeSeriesDatum,Sensor
+
+
+
+from rest_framework import status, response, views
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+
+
+from api.serializers.gateway import RegisterSerializer, LoginSerializer
+from api.serializers.dashboard import DashboardSerializer
+from api.serializers.instrument import InstrumentRetrieveSerializer
+from api.serializers.sensor import SensorRetrieveSerializer
 import csv
 
 
@@ -27,18 +36,6 @@ def api_version(request):
 
 
 #----gateway----
-"""
-gateway/views.py
-"""
-from django.http import HttpResponse, JsonResponse
-# from django.contrib.auth.models import User
-from django.shortcuts import render # STEP 1 - Import
-from django.shortcuts import redirect
-from django.contrib.auth.models import User # STEP 1: Import the user
-from django.contrib.auth import authenticate, login, logout
-from rest_framework import views, status, response
-
-from gateway.serializers import RegisterSerializer, LoginSerializer
 
 
 
@@ -68,6 +65,21 @@ class LoginAPI(views.APIView):
                  'details': 'You have been logged in successfully!'
             },
         )
+
+        
+def post_logout_api(request):
+    try:
+        logout(request)
+        return JsonResponse({
+             "was_logged_out": True,
+             "reason": None,
+        })
+    except Exception as e:
+        print(e)
+        return JsonResponse({
+             "was_logged_out": False,
+             "reason": str(e),
+        })
 
 
 

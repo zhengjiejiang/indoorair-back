@@ -1,1 +1,1 @@
-from sensor.serializers.sensor_retrieve_serializer import SensorRetrieveSerializer
+from api.serializers.sensor.sensor_retrieve_serializer import SensorRetrieveSerializer
